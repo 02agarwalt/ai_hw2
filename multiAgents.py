@@ -48,8 +48,6 @@ class ReflexAgent(Agent):
         bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
         chosenIndex = random.choice(bestIndices) # Pick randomly among the best
 
-        "Add more of your code here if you want to"
-
         return legalMoves[chosenIndex]
 
     def evaluationFunction(self, currentGameState, action):
@@ -145,7 +143,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
           gameState.getNumAgents():
             Returns the total number of agents in the game
         """
-        "*** YOUR CODE HERE ***"
         numAgents = gameState.getNumAgents()
         legalMoves = gameState.getLegalActions(0)
         bestVal = -1 * sys.maxint
@@ -162,10 +159,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
         if depth == 0 or gameState.isWin() or gameState.isLose():
             return self.evaluationFunction(gameState)
 
-        #if agentIndex == numAgents:
-        #    agentIndex = 0
-        #    depth -= 1
-        
         legalMoves = gameState.getLegalActions(agentIndex)
         successorStates = [gameState.generateSuccessor(agentIndex, action) for action in legalMoves]
         
@@ -182,19 +175,51 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 else:
                     val = min(val, self.minimax(successor, depth, numAgents, agentIndex + 1))
             return val
-    
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
       Your minimax agent with alpha-beta pruning (question 3)
     """
-
     def getAction(self, gameState):
         """
           Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.minimax_w_pruning(gameState, self.depth, gameState.getNumAgents(), 0, -1 * sys.maxint, sys.maxint)[1]
+
+    def minimax_w_pruning(self, gameState, depth, numAgents, agentIndex, alpha, beta):
+        if depth == 0 or gameState.isWin() or gameState.isLose():
+            return (self.evaluationFunction(gameState), None)
+
+        if agentIndex == 0:
+            bestVal = -1 * sys.maxint
+            bestAction = None
+            for action in gameState.getLegalActions(agentIndex):
+                successorState = gameState.generateSuccessor(agentIndex, action)
+                curVal, curAction = self.minimax_w_pruning(successorState, depth, numAgents, agentIndex + 1, alpha, beta)
+                if curVal > bestVal:
+                  bestVal = curVal
+                  bestAction = action
+                alpha = max(alpha, bestVal)
+                if beta < alpha:
+                  break
+            return (bestVal, bestAction)
+        else:
+            bestVal = sys.maxint
+            bestAction = None
+            for action in gameState.getLegalActions(agentIndex):
+                successorState = gameState.generateSuccessor(agentIndex, action)
+                curVal = sys.maxint
+                if agentIndex == (numAgents - 1):
+                    curVal, curAction = self.minimax_w_pruning(successorState, depth - 1, numAgents, 0, alpha, beta)
+                else:
+                    curVal, curAction = self.minimax_w_pruning(successorState, depth, numAgents, agentIndex + 1, alpha, beta)
+                if curVal < bestVal:
+                  bestVal = curVal
+                  bestAction = action
+                beta = min(beta, bestVal)
+                if beta < alpha:
+                  break
+            return (bestVal, bestAction)
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
