@@ -181,9 +181,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
       Your minimax agent with alpha-beta pruning (question 3)
     """
     def getAction(self, gameState):
-        """
-          Returns the minimax action using self.depth and self.evaluationFunction
-        """
         return self.minimax_w_pruning(gameState, self.depth, gameState.getNumAgents(), 0, -1 * sys.maxint, sys.maxint)[1]
 
     def minimax_w_pruning(self, gameState, depth, numAgents, agentIndex, alpha, beta):
@@ -225,16 +222,40 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent (question 4)
     """
-
     def getAction(self, gameState):
-        """
-          Returns the expectimax action using self.depth and self.evaluationFunction
+        return self.expectimax(gameState, self.depth, gameState.getNumAgents(), 0, -1 * sys.maxint, sys.maxint)[1]
 
-          All ghosts should be modeled as choosing uniformly at random from their
-          legal moves.
-        """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+    def expectimax(self, gameState, depth, numAgents, agentIndex, alpha, beta):
+        if depth == 0 or gameState.isWin() or gameState.isLose():
+            return (self.evaluationFunction(gameState), None)
+
+        if agentIndex == 0:
+            bestVal = -1 * sys.maxint
+            bestAction = None
+            for action in gameState.getLegalActions(agentIndex):
+                successorState = gameState.generateSuccessor(agentIndex, action)
+                curVal, curAction = self.expectimax(successorState, depth, numAgents, agentIndex + 1, alpha, beta)
+                if curVal > bestVal:
+                  bestVal = curVal
+                  bestAction = action
+            return (bestVal, bestAction)
+        else:
+            bestVal = sys.maxint
+            bestAction = None
+            avgVal = 0
+            potentialActions = gameState.getLegalActions(agentIndex)
+            for action in potentialActions:
+                successorState = gameState.generateSuccessor(agentIndex, action)
+                curVal = sys.maxint
+                if agentIndex == (numAgents - 1):
+                    curVal, curAction = self.expectimax(successorState, depth - 1, numAgents, 0, alpha, beta)
+                else:
+                    curVal, curAction = self.expectimax(successorState, depth, numAgents, agentIndex + 1, alpha, beta)
+                avgVal += curVal
+                if curVal < bestVal:
+                  bestVal = curVal
+                  bestAction = action
+            return (float(avgVal) / float(len(potentialActions)), bestAction)
 
 def betterEvaluationFunction(currentGameState):
     """
