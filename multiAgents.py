@@ -264,8 +264,54 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: <write something here so we know what you did>
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    if currentGameState.isWin():
+      return sys.maxint
+
+    score = currentGameState.getScore()
+
+    newPos = currentGameState.getPacmanPosition()
+
+    newFood = currentGameState.getFood().asList()
+    foodDists = [manhattanDistance(newPos, food) for food in newFood]
+
+    allGhosts = currentGameState.getGhostStates()
+    scaredGhosts = [ghost for ghost in allGhosts if ghost.scaredTimer > 0]
+    normalGhosts = [ghost for ghost in allGhosts if ghost.scaredTimer <= 0]
+
+    scaredGhostDists = [manhattanDistance(newPos, ghost.getPosition()) for ghost in scaredGhosts]
+    normalGhostDists = [manhattanDistance(newPos, ghost.getPosition()) for ghost in normalGhosts]
+    if len(normalGhostDists) > 0 and min(normalGhostDists) == 0:
+      return -1 * sys.maxint
+
+
+    def reciprocateList(distList):
+      return [1.0 / float(dist) for dist in distList]
+
+    def squareList(distList):
+      return [dist * dist for dist in distList]
+
+    foodReciprocal = squareList(reciprocateList(foodDists))
+    scaredReciprocal = squareList(reciprocateList(scaredGhostDists))
+    normalReciprocal = squareList(reciprocateList(normalGhostDists))
+
+    wFood = 10
+    wScared = 20
+    wNormal = -20
+    weights = [wFood, wScared, wNormal]
+
+    def getFinalScore(foodList, scaredList, normalList, weights):
+      result = 0
+      for foodScore in foodList:
+        result += (weights[0] * foodScore)
+      for scaredScore in scaredList:
+        result += (weights[1] * scaredScore)
+      for normalScore in normalList:
+        result += (weights[2] * normalScore)
+      return result
+
+    score += getFinalScore(foodReciprocal, scaredReciprocal, normalReciprocal, weights)
+    return score
+
 
 # Abbreviation
 better = betterEvaluationFunction
