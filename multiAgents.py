@@ -283,20 +283,19 @@ def betterEvaluationFunction(currentGameState):
     if len(normalGhostDists) > 0 and min(normalGhostDists) == 0:
       return -1 * sys.maxint
 
-
     def reciprocateList(distList):
       return [1.0 / float(dist) for dist in distList]
 
     def squareList(distList):
       return [dist * dist for dist in distList]
 
-    foodReciprocal = squareList(reciprocateList(foodDists))
-    scaredReciprocal = squareList(reciprocateList(scaredGhostDists))
-    normalReciprocal = squareList(reciprocateList(normalGhostDists))
+    foodReciprocal = reciprocateList(foodDists)
+    scaredReciprocal = reciprocateList(scaredGhostDists)
+    normalReciprocal = reciprocateList(normalGhostDists)
 
     wFood = 10
-    wScared = 20
-    wNormal = -20
+    wScared = 83
+    wNormal = -30
     weights = [wFood, wScared, wNormal]
 
     def getFinalScore(foodList, scaredList, normalList, weights):
